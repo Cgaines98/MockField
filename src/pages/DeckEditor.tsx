@@ -13,7 +13,7 @@ const DeckEditor: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Card[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [hoverCard, setHoverCard] = useState<string | null>(null);
+  const [hoverCard, setHoverCard] = useState<Card | DeckCard | null>(null);
 
   useEffect(() => {
     if (id && id !== 'new' && token) {
@@ -139,30 +139,7 @@ const DeckEditor: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px', position: 'relative' }}>
-      {/* Hover Preview */}
-      {hoverCard && (
-        <div style={{
-          position: 'fixed',
-          top: '100px',
-          right: '400px',
-          zIndex: 100,
-          pointerEvents: 'none',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          backgroundColor: '#000'
-        }}>
-          {deck.cards?.find(c => c.id === hoverCard)?.image_uris && (
-            <img 
-              src={deck.cards.find(c => c.id === hoverCard)?.image_uris?.normal} 
-              alt="preview" 
-              style={{ width: '250px', display: 'block' }}
-            />
-          )}
-        </div>
-      )}
-
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px 250px', gap: '30px', position: 'relative' }}>
       <div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -233,8 +210,7 @@ const DeckEditor: React.FC = () => {
                 key={card.id} 
                 className="card-item" 
                 style={{ gap: '15px' }}
-                onMouseEnter={() => setHoverCard(card.id)}
-                onMouseLeave={() => setHoverCard(null)}
+                onMouseEnter={() => setHoverCard(card)}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
                   {card.image_uris && (
@@ -262,7 +238,7 @@ const DeckEditor: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div key={card.id} className="grid-card-item">
+              <div key={card.id} className="grid-card-item" onMouseEnter={() => setHoverCard(card)}>
                 <div style={{ position: 'relative' }}>
                   {card.image_uris ? (
                     <img 
@@ -310,6 +286,7 @@ const DeckEditor: React.FC = () => {
               className="card-item"
               style={{ cursor: 'pointer', fontSize: '0.9rem', gap: '10px' }}
               onClick={() => addCard(card)}
+              onMouseEnter={() => setHoverCard(card)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
                 {(card.image_uris || (card.card_faces && card.card_faces[0].image_uris)) && (
@@ -329,6 +306,40 @@ const DeckEditor: React.FC = () => {
               <Plus size={14} />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Card Display Window */}
+      <div style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
+        <div style={{ 
+          background: '#1f1f1f', 
+          padding: '15px', 
+          borderRadius: '8px', 
+          border: '1px solid #333',
+          minHeight: '350px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '250px'
+        }}>
+          {hoverCard ? (
+            <div>
+              <img 
+                src={hoverCard.image_uris?.normal || hoverCard.card_faces?.[0]?.image_uris?.normal} 
+                alt={hoverCard.name} 
+                style={{ width: '100%', borderRadius: '8px', display: 'block', boxShadow: '0 4px 10px rgba(0,0,0,0.5)' }}
+              />
+              <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                <div style={{ fontWeight: 'bold' }}>{hoverCard.name}</div>
+                <div style={{ fontSize: '0.8rem', color: '#aaa' }}>{hoverCard.type_line}</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: '#666', textAlign: 'center' }}>
+              Hover over a card to see preview
+            </div>
+          )}
         </div>
       </div>
     </div>
